@@ -8,7 +8,7 @@ plt.style.use('ggplot')
 
 class Portfolio:
 
-    def __init__(self, stocks: List[str], allocations: List[float], initial_capital: int):
+    def __init__(self, stocks: List[str], allocations: List[float], initial_capital: int) -> None:
         self.allocations = allocations
         self.initial = initial_capital
 
