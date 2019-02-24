@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from stats import get_close, get_daily_returns
 from typing import List
 import scipy.optimize as spo
 plt.style.use('ggplot')
@@ -45,12 +44,30 @@ class Portfolio:
     def get_sharpe_ratio(self) -> float:
         return np.sqrt(252) * (self.get_avg_daily_return() / self.get_risk())
 
+# returns a dataframe with the daily returns of the stocks in "df"
+def get_daily_returns(df: pd.DataFrame) -> pd.DataFrame:
+    dreturns = df.copy()
+    dreturns.iloc[1:] = (dreturns.iloc[1:] / dreturns.iloc[:-1].values) - 1
+    dreturns.iloc[0] = 0
+    return dreturns
+
+# returns a dataframe with the adjusted closes of all tickers in "symbols" between the dates 10/1/2017 and 10/1/2018
+def get_close(symbols: List[str], dates=pd.date_range('2017-10-1', '2018-10-1')) -> pd.DataFrame:
+    df = pd.DataFrame(index=dates)
+    for symbol in symbols:
+        temp_df = pd.read_csv('./data/{}.csv'.format(symbol),
+                              index_col='Date',
+                              usecols=['Date', 'Adj Close'])
+        temp_df = temp_df.rename(columns={'Adj Close': symbol})
+        df = df.join(temp_df)
+    return df.dropna()
+
 # returns the negative sharpe ratio of portfolio with given floats
 def error(allocations: List[float]) -> float:
     ptemp = Portfolio(['AAPL', 'AMZN', 'SPY', 'MSFT', 'GOOG'], allocations, 1000000)
     return -1.0 * ptemp.get_sharpe_ratio()
 
-
+# main
 if __name__ == "__main__":
     p1 = Portfolio(['AAPL', 'AMZN', 'SPY', 'MSFT', 'GOOG'], [0.1, 0.0, 0.4, 0.3, 0.2], 1000000)
     p2 = Portfolio(['AAPL', 'AMZN', 'SPY', 'MSFT', 'GOOG'], [0.0, 0.0, 1.0, 0.0, 0.0], 1000000)
